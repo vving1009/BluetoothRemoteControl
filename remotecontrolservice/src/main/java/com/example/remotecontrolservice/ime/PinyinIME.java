@@ -1,21 +1,19 @@
-package com.satcatche.btserver;
+package com.example.remotecontrolservice.ime;
 
-import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.inputmethodservice.InputMethodService;
-import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputConnection;
-import android.widget.ArrayAdapter;
 import android.widget.Toast;
 
-import static android.content.ContentValues.TAG;
+import com.example.remotecontrolservice.BluetoothChatService;
+import com.example.remotecontrolservice.R;
 
 /**
  * PinyinIME

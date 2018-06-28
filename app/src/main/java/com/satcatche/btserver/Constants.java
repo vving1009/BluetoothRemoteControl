@@ -14,11 +14,8 @@
  * limitations under the License.
  */
 
-package com.example.android.BluetoothChat;
+package com.satcatche.btserver;
 
-/**
- * Defines several constants used between {@link com.example.android.BluetoothChat.service.BluetoothChatService} and the UI.
- */
 public interface Constants {
 
     // Message types sent from the BluetoothChatService Handler

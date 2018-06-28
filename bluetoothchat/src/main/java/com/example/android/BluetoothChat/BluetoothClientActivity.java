@@ -33,6 +33,8 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
 
+import com.example.android.BluetoothChat.service.BluetoothChatService;
+
 /**
  * This is the main Activity that displays the current chat session.
  */

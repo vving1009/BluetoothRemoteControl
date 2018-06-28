@@ -63,7 +63,7 @@
         </service>
 
         <service
-            android:name="com.example.android.BluetoothChat.BluetoothAccessibilityService"
+            android:name="com.example.android.BluetoothChat.service.BluetoothAccessibilityService"
             android:enabled="true"
             android:exported="true"
             android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE">

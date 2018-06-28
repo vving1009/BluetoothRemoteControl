@@ -6,6 +6,7 @@
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
       <module fileurl="file://$PROJECT_DIR$/bluetoothautopair/bluetoothautopair.iml" filepath="$PROJECT_DIR$/bluetoothautopair/bluetoothautopair.iml" />
       <module fileurl="file://$PROJECT_DIR$/bluetoothchat/bluetoothchat.iml" filepath="$PROJECT_DIR$/bluetoothchat/bluetoothchat.iml" />
+      <module fileurl="file://$PROJECT_DIR$/remotecontrolservice/remotecontrolservice.iml" filepath="$PROJECT_DIR$/remotecontrolservice/remotecontrolservice.iml" />
     </modules>
   </component>
 </project>

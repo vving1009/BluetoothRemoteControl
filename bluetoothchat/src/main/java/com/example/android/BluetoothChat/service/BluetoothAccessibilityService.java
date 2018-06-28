@@ -1,4 +1,4 @@
-package com.example.android.BluetoothChat;
+package com.example.android.BluetoothChat.service;
 
 import android.accessibilityservice.AccessibilityService;
 import android.annotation.TargetApi;

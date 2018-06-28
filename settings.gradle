@@ -1,1 +1,1 @@
-include ':app', ':bluetoothchat', ':bluetoothautopair'
+include ':app', ':bluetoothchat', ':bluetoothautopair', ':remotecontrolservice'
