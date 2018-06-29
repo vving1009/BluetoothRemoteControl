@@ -26,14 +26,21 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
+import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.android.BluetoothChat.service.BluetoothChatService;
+import com.google.gson.Gson;
 
 /**
  * This is the main Activity that displays the current chat session.
@@ -60,6 +67,10 @@ public class BluetoothClientActivity extends Activity implements View.OnClickLis
     // Member object for the chat services
     private BluetoothChatService mChatService = null;
 
+    private EditText inputText;
+
+    private Gson gson = new Gson();
+
     public static void startActivity(Context context) {
         context.startActivity(new Intent(context, BluetoothClientActivity.class));
     }
@@ -79,7 +90,54 @@ public class BluetoothClientActivity extends Activity implements View.OnClickLis
         findViewById(R.id.button_back).setOnClickListener(this);
         findViewById(R.id.button_home).setOnClickListener(this);
         findViewById(R.id.button_menu).setOnClickListener(this);
+        inputText = findViewById(R.id.text_input);
+        //inputText.setImeOptions(IME_ACTION_DONE);
+        inputText.setOnKeyListener(new View.OnKeyListener() {
+            @Override
+            public boolean onKey(View v, int keyCode, KeyEvent event) {
+                Log.d(TAG, "onKey: keycode=" + keyCode);
+                Log.d(TAG, "onKey: event=" + event);
+                if (event.getAction() == KeyEvent.ACTION_DOWN) {
+                    sendMessage(getJson(keyCode));
+                }
+                return false;
+            }
+        });
+        inputText.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+            @Override
+            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+                Log.d(TAG, "onKey: actionId=" + actionId);
+                Log.d(TAG, "onKey: event=" + event);
+                return false;
+            }
+        });
+        inputText.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+                Log.d(TAG, "beforeTextChanged: string=" + s);
+                Log.d(TAG, "beforeTextChanged: start=" + start);
+                Log.d(TAG, "beforeTextChanged: count=" + count);
+                Log.d(TAG, "beforeTextChanged: after=" + after);
+            }
 
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                Log.d(TAG, "onTextChanged: string=" + s);
+                Log.d(TAG, "onTextChanged: start=" + start);
+                Log.d(TAG, "onTextChanged: before=" + before);
+                Log.d(TAG, "onTextChanged: count=" + count);
+                if (count > 0) {
+                    String input = s.subSequence(start, start + count).toString();
+                    Log.d(TAG, "onTextChanged: input=" + input);
+                    sendMessage(getJson(input));
+                }
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                Log.d(TAG, "afterTextChanged: s=" + s);
+            }
+        });
         // Get local Bluetooth adapter
         mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
 
@@ -91,6 +149,20 @@ public class BluetoothClientActivity extends Activity implements View.OnClickLis
         }
     }
 
+    private String getJson(String text) {
+        BluetoothBean bean = new BluetoothBean();
+        bean.setMessage(text);
+        bean.setType("text");
+        return gson.toJson(bean);
+    }
+
+    private String getJson(int keycode) {
+        BluetoothBean bean = new BluetoothBean();
+        bean.setMessage(String.valueOf(keycode));
+        bean.setType("keycode");
+        return gson.toJson(bean);
+    }
+    
     @Override
     public void onStart() {
         super.onStart();
@@ -116,12 +188,23 @@ public class BluetoothClientActivity extends Activity implements View.OnClickLis
         // not enabled during onStart(), so we were paused to enable it...
         // onResume() will be called when ACTION_REQUEST_ENABLE activity returns.
         if (mChatService != null) {
+            mChatService.setReceiveMessageListener(message -> {
+                if (message.equals("show")) {
+                    //inputText.requestFocus();
+                    getImm().showSoftInput(inputText, InputMethodManager.SHOW_FORCED);
+                }
+            });
             // Only if the state is STATE_NONE, do we know that we haven't started already
             if (mChatService.getState() == BluetoothChatService.STATE_NONE) {
                 // Start the Bluetooth chat services
                 mChatService.start();
             }
         }
+        inputText.requestFocus();
+    }
+
+    private InputMethodManager getImm() {
+        return (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
     }
 
     private void setupChat() {
@@ -161,29 +244,6 @@ public class BluetoothClientActivity extends Activity implements View.OnClickLis
             Intent discoverableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE);
             discoverableIntent.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, 300);
             startActivity(discoverableIntent);
-        }
-    }
-
-    /**
-     * Sends a message.
-     *
-     * @param message A string of text to send.
-     */
-    private void sendMessage(String message) {
-        // Check that we're actually connected before trying anything
-        if (mChatService.getState() != BluetoothChatService.STATE_CONNECTED) {
-            Toast.makeText(this, R.string.not_connected, Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        // Check that there's actually something to send
-        if (message.length() > 0) {
-            // Get the message bytes and tell the BluetoothChatService to write
-            byte[] send = message.getBytes();
-            mChatService.write(send);
-
-            // Reset out string buffer to zero and clear the edit text field
-            mOutStringBuffer.setLength(0);
         }
     }
 
@@ -316,29 +376,52 @@ public class BluetoothClientActivity extends Activity implements View.OnClickLis
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.button_ok:
-                sendMessage("ok");
+                sendMessage(getJson(KeyEvent.KEYCODE_DPAD_CENTER));
                 break;
             case R.id.button_left:
-                sendMessage("left");
+                sendMessage(getJson(KeyEvent.KEYCODE_DPAD_LEFT));
                 break;
             case R.id.button_right:
-                sendMessage("right");
+                sendMessage(getJson(KeyEvent.KEYCODE_DPAD_RIGHT));
                 break;
             case R.id.button_up:
-                sendMessage("up");
+                sendMessage(getJson(KeyEvent.KEYCODE_DPAD_UP));
                 break;
             case R.id.button_down:
-                sendMessage("down");
+                sendMessage(getJson(KeyEvent.KEYCODE_DPAD_DOWN));
                 break;
             case R.id.button_back:
-                sendMessage("back");
+                sendMessage(getJson(KeyEvent.KEYCODE_BACK));
                 break;
             case R.id.button_home:
-                sendMessage("home");
+                sendMessage(getJson(KeyEvent.KEYCODE_HOME));
                 break;
             case R.id.button_menu:
-                sendMessage("menu");
+                sendMessage(getJson(KeyEvent.KEYCODE_MENU));
                 break;
+        }
+    }
+
+    /**
+     * Sends a message.
+     *
+     * @param message A string of text to send.
+     */
+    private void sendMessage(String message) {
+        // Check that we're actually connected before trying anything
+        if (mChatService.getState() != BluetoothChatService.STATE_CONNECTED) {
+            Toast.makeText(this, R.string.not_connected, Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        // Check that there's actually something to send
+        if (message.length() > 0) {
+            // Get the message bytes and tell the BluetoothChatService to write
+            byte[] send = message.getBytes();
+            mChatService.write(send);
+
+            // Reset out string buffer to zero and clear the edit text field
+            mOutStringBuffer.setLength(0);
         }
     }
 }

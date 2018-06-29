@@ -2,6 +2,7 @@ package com.example.remotecontrolservice;
 
 import android.app.Service;
 import android.bluetooth.BluetoothAdapter;
+import android.content.Context;
 import android.content.Intent;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
@@ -12,7 +13,7 @@ import android.widget.Toast;
 public class RemoteControlService extends Service {
     private static final String TAG = "liwei";
 
-    private final boolean USE_ADB = true;
+    private final boolean USE_ADB = false;
 
     /**
      * Local Bluetooth adapter
@@ -34,9 +35,7 @@ public class RemoteControlService extends Service {
     public void onCreate() {
         super.onCreate();
         Log.d(TAG, "RemoteControlService onCreate: ");
-
         mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-
     }
 
     @Nullable
@@ -52,14 +51,18 @@ public class RemoteControlService extends Service {
         if (mBluetoothAdapter == null) {
             Toast.makeText(this, "Bluetooth is not available", Toast.LENGTH_LONG).show();
             stopSelf();
-        } else if (!mBluetoothAdapter.isEnabled()) {
+        }
+
+        if (!mBluetoothAdapter.isEnabled()) {
             // If BT is not on, request that it be enabled.
             // setupChat() will then be called during onActivityResult
             Intent enableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
             enableIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             startActivity(enableIntent);
             // Otherwise, setup the chat session
-        } else if (mChatService == null) {
+        }
+
+        if (mChatService == null) {
             // Initialize the BluetoothChatService to perform bluetooth connections
             mChatService = new BluetoothChatService(this);
         }
@@ -180,6 +183,29 @@ public class RemoteControlService extends Service {
             discoverableIntent.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, 300);
             discoverableIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             startActivity(discoverableIntent);
+        }
+    }
+
+    /**
+     * Sends a message.
+     *
+     * @param message A string of text to send.
+     */
+    private void sendMessage(String message) {
+        // Check that we're actually connected before trying anything
+        if (mChatService.getState() != BluetoothChatService.STATE_CONNECTED) {
+            Toast.makeText(this, R.string.not_connected, Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        // Check that there's actually something to send
+        if (message.length() > 0) {
+            // Get the message bytes and tell the BluetoothChatService to write
+            byte[] send = message.getBytes();
+            mChatService.write(send);
+
+            // Reset out string buffer to zero and clear the edit text field
+            //mOutStringBuffer.setLength(0);
         }
     }
 

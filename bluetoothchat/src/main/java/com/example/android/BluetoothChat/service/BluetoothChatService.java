@@ -497,6 +497,7 @@ public class BluetoothChatService {
                     // Send the obtained bytes to the UI Activity
                     mHandler.obtainMessage(Constants.MESSAGE_READ, bytes, -1, buffer)
                             .sendToTarget();
+                    mReceiveMessageListener.onReceived(new String(buffer, 0, bytes));
                 } catch (IOException e) {
                     Log.e(TAG, "disconnected", e);
                     connectionLost();
@@ -513,7 +514,7 @@ public class BluetoothChatService {
         public void write(byte[] buffer) {
             try {
                 mmOutStream.write(buffer);
-
+                Log.d(TAG, "bluetooth write: " + new String(buffer));
                 // Share the sent message back to the UI Activity
                 mHandler.obtainMessage(Constants.MESSAGE_WRITE, -1, -1, buffer)
                         .sendToTarget();
@@ -529,5 +530,15 @@ public class BluetoothChatService {
                 Log.e(TAG, "close() of connect socket failed", e);
             }
         }
+    }
+
+    private ReceiveMessageListener mReceiveMessageListener;
+
+    public interface ReceiveMessageListener {
+        void onReceived (String message);
+    }
+
+    public void setReceiveMessageListener(ReceiveMessageListener receiveMessageListener) {
+        mReceiveMessageListener = receiveMessageListener;
     }
 }

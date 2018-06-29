@@ -37,12 +37,12 @@ public class MainActivity extends AppCompatActivity {
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         recyclerView.setAdapter(new Adapter());
         recyclerView.addItemDecoration(new DividerItemDecoration(this, DividerItemDecoration.VERTICAL));
-        Intent intent = new Intent();
+        /*Intent intent = new Intent();
         intent.setAction("com.example.remotecontrolservice.TEST_ACTION");
         intent.addFlags(Intent.FLAG_INCLUDE_STOPPED_PACKAGES);
         intent.setComponent(new
                 ComponentName("com.example.remotecontrolservice","com.example.remotecontrolservice.LaunchReceiver"));
-        sendBroadcast(intent);
+        sendBroadcast(intent);*/
     }
 
     private class Adapter extends RecyclerView.Adapter<Adapter.ViewHolder> {

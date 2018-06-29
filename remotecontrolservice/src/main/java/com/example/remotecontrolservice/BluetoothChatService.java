@@ -204,6 +204,24 @@ public class BluetoothChatService {
     }
 
     /**
+     * Write to the ConnectedThread in an unsynchronized manner
+     *
+     * @param out The bytes to write
+     * @see ConnectedThread#write(byte[])
+     */
+    public void write(byte[] out) {
+        // Create temporary object
+        ConnectedThread r;
+        // Synchronize a copy of the ConnectedThread
+        synchronized (this) {
+            if (mState != STATE_CONNECTED) return;
+            r = mConnectedThread;
+        }
+        // Perform the write unsynchronized
+        r.write(out);
+    }
+
+    /**
      * This thread runs while listening for incoming connections. It behaves
      * like a server-side client. It runs until a connection is accepted
      * (or until cancelled).
@@ -295,20 +313,24 @@ public class BluetoothChatService {
     private class ConnectedThread extends Thread {
         private final BluetoothSocket mmSocket;
         private final InputStream mmInStream;
+        private final OutputStream mmOutStream;
 
         public ConnectedThread(BluetoothSocket socket, String socketType) {
             Log.d(TAG, "create ConnectedThread: " + socketType);
             mmSocket = socket;
             InputStream tmpIn = null;
+            OutputStream tmpOut = null;
 
             // Get the BluetoothSocket input and output streams
             try {
                 tmpIn = socket.getInputStream();
+                tmpOut = socket.getOutputStream();
             } catch (IOException e) {
                 Log.e(TAG, "temp sockets not created", e);
             }
 
             mmInStream = tmpIn;
+            mmOutStream = tmpOut;
             mState = STATE_CONNECTED;
         }
 
@@ -326,14 +348,28 @@ public class BluetoothChatService {
                     // Send the obtained bytes to the UI Activity
                     /*mHandler.obtainMessage(Constants.MESSAGE_READ, bytes, -1, buffer)
                             .sendToTarget();*/
-                    Log.d(TAG, "run: buffer.length=" + bytes);
                     String readMessage = new String(buffer, 0, bytes);
+                    Log.d(TAG, "run: bluetooth readMessage=" + readMessage);
                     mReceiveMessageListener.onReceived(readMessage);
                 } catch (IOException e) {
                     Log.e(TAG, "disconnected", e);
                     connectionLost();
                     break;
                 }
+            }
+        }
+
+        /**
+         * Write to the connected OutStream.
+         *
+         * @param buffer The bytes to write
+         */
+        public void write(byte[] buffer) {
+            try {
+                Log.d(TAG, "bluetooth write: " + new String(buffer));
+                mmOutStream.write(buffer);
+            } catch (IOException e) {
+                Log.e(TAG, "Exception during write", e);
             }
         }
 
@@ -348,7 +384,7 @@ public class BluetoothChatService {
 
     private ReceiveMessageListener mReceiveMessageListener;
 
-    interface ReceiveMessageListener {
+    public interface ReceiveMessageListener {
         void onReceived (String message);
     }
 
