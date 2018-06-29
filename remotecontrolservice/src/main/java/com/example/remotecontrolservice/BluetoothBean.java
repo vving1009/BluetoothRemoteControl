@@ -2,10 +2,6 @@ package com.example.remotecontrolservice;
 
 public class BluetoothBean {
 
-    public static final String TEXT = "text";
-
-    public static final String KEYCODE = "keycode";
-
     private String message;
 
     private String type;

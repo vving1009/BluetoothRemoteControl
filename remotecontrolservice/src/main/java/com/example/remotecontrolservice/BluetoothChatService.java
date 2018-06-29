@@ -180,7 +180,6 @@ public class BluetoothChatService {
      */
     private void connectionFailed() {
 
-
         mState = STATE_NONE;
         // Update UI title
         updateUserInterfaceTitle();
@@ -345,9 +344,6 @@ public class BluetoothChatService {
                     // Read from the InputStream
                     bytes = mmInStream.read(buffer);
 
-                    // Send the obtained bytes to the UI Activity
-                    /*mHandler.obtainMessage(Constants.MESSAGE_READ, bytes, -1, buffer)
-                            .sendToTarget();*/
                     String readMessage = new String(buffer, 0, bytes);
                     Log.d(TAG, "run: bluetooth readMessage=" + readMessage);
                     mReceiveMessageListener.onReceived(readMessage);
