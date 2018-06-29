@@ -17,7 +17,6 @@
     <string name="app_name">Bluetooth Chat</string>
 
     <!--  BluetoothChat -->
-    <string name="send">Send</string>
     <string name="not_connected">You are not connected to a device</string>
     <string name="bt_not_enabled_leaving">Bluetooth was not enabled. Leaving Bluetooth Chat.</string>
     <string name="title_connecting">connecting...</string>
@@ -38,7 +37,4 @@
     <string name="insecure_connect">Connect a device - Insecure</string>
     <string name="discoverable">Make discoverable</string>
 
-    <string name="ime_name">赛特凯特输入法</string>
-    <string name="keyboard_del">删除</string>
-    <string name="keyboard_enter">确定</string>
 </resources>

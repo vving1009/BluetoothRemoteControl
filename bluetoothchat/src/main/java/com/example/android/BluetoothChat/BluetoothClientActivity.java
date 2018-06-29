@@ -59,9 +59,6 @@ public class BluetoothClientActivity extends Activity implements View.OnClickLis
 
     // Name of the connected device
     private String mConnectedDeviceName = null;
-    // Array adapter for the conversation thread
-    // String buffer for outgoing messages
-    private StringBuffer mOutStringBuffer;
     // Local Bluetooth adapter
     private BluetoothAdapter mBluetoothAdapter = null;
     // Member object for the chat services
@@ -90,52 +87,28 @@ public class BluetoothClientActivity extends Activity implements View.OnClickLis
         findViewById(R.id.button_back).setOnClickListener(this);
         findViewById(R.id.button_home).setOnClickListener(this);
         findViewById(R.id.button_menu).setOnClickListener(this);
-        inputText = findViewById(R.id.text_input);
-        //inputText.setImeOptions(IME_ACTION_DONE);
-        inputText.setOnKeyListener(new View.OnKeyListener() {
-            @Override
-            public boolean onKey(View v, int keyCode, KeyEvent event) {
-                Log.d(TAG, "onKey: keycode=" + keyCode);
-                Log.d(TAG, "onKey: event=" + event);
-                if (event.getAction() == KeyEvent.ACTION_DOWN) {
-                    sendMessage(getJson(keyCode));
-                }
-                return false;
+        inputText = findViewById(R.id.text_input_hide);
+        inputText.setOnKeyListener((v, keyCode, event) -> {
+            if (event.getAction() == KeyEvent.ACTION_DOWN) {
+                sendMessage(getJson(keyCode));
             }
-        });
-        inputText.setOnEditorActionListener(new TextView.OnEditorActionListener() {
-            @Override
-            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
-                Log.d(TAG, "onKey: actionId=" + actionId);
-                Log.d(TAG, "onKey: event=" + event);
-                return false;
-            }
+            return false;
         });
         inputText.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-                Log.d(TAG, "beforeTextChanged: string=" + s);
-                Log.d(TAG, "beforeTextChanged: start=" + start);
-                Log.d(TAG, "beforeTextChanged: count=" + count);
-                Log.d(TAG, "beforeTextChanged: after=" + after);
             }
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-                Log.d(TAG, "onTextChanged: string=" + s);
-                Log.d(TAG, "onTextChanged: start=" + start);
-                Log.d(TAG, "onTextChanged: before=" + before);
-                Log.d(TAG, "onTextChanged: count=" + count);
                 if (count > 0) {
                     String input = s.subSequence(start, start + count).toString();
-                    Log.d(TAG, "onTextChanged: input=" + input);
                     sendMessage(getJson(input));
                 }
             }
 
             @Override
             public void afterTextChanged(Editable s) {
-                Log.d(TAG, "afterTextChanged: s=" + s);
             }
         });
         // Get local Bluetooth adapter
@@ -162,7 +135,7 @@ public class BluetoothClientActivity extends Activity implements View.OnClickLis
         bean.setType("keycode");
         return gson.toJson(bean);
     }
-    
+
     @Override
     public void onStart() {
         super.onStart();
@@ -190,7 +163,6 @@ public class BluetoothClientActivity extends Activity implements View.OnClickLis
         if (mChatService != null) {
             mChatService.setReceiveMessageListener(message -> {
                 if (message.equals("show")) {
-                    //inputText.requestFocus();
                     getImm().showSoftInput(inputText, InputMethodManager.SHOW_FORCED);
                 }
             });
@@ -212,9 +184,6 @@ public class BluetoothClientActivity extends Activity implements View.OnClickLis
 
         // Initialize the BluetoothChatService to perform bluetooth connections
         mChatService = new BluetoothChatService(this, mHandler);
-
-        // Initialize the buffer for outgoing messages
-        mOutStringBuffer = new StringBuffer("");
     }
 
     @Override
@@ -419,9 +388,6 @@ public class BluetoothClientActivity extends Activity implements View.OnClickLis
             // Get the message bytes and tell the BluetoothChatService to write
             byte[] send = message.getBytes();
             mChatService.write(send);
-
-            // Reset out string buffer to zero and clear the edit text field
-            mOutStringBuffer.setLength(0);
         }
     }
 }
